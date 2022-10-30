@@ -46,3 +46,63 @@ rename_ampa_columns <- function(df) {
         "utc_offset" = "UTC Offset In Seconds")
     return(df)
 }
+
+# Opens a play activity file (csv) and renames the columns.
+open_ampa_csv <- function(filename) {
+    return(rename_ampa_columns(read_csv(filename)))
+}
+
+# Returns a data frame containing the total play length of unique songs.
+song_lengths <- function(df) {
+    # Select PLAY_END event types. (Is this correct?)
+    df <- df[df$event_type = "PLAY_END", ]
+
+    # Merge song title and artist name to allow for calculation.
+    df$song_sort <- str_c(df$song_title, "<!-AMPA-SEP-!>", df$artist_name)
+
+    # Create table
+    df <- aggregate(df$play_duration, list(df$song_sort), FUN = sum)
+    df[c("song_title", "artist_name")] <- str_split_fixed(df$Group.1,
+        "<!-AMPA-SEP-!>", 2)
+    df <- rename(df, "total_play_duration" = x)
+    df <- select(df, -Group.1)
+
+    return(df)
+}
+
+# Returns a data frame containing activity history for a specific artist.
+filter_artist <- function(df, artist_name) {
+    df <- df[df$artist_name == artist_name, ]
+    return(df)
+}
+
+# Returns a data frame containing activity history on a specific date.
+filter_date <- function(df, date) {
+    date <- as.Date(date)
+    df$event_received <- as.Date(df$event_received)
+    df <- df[df$event_received == date, ]
+    return(df)
+}
+
+# Returns a data frame containing activity history between two specific dates.
+filter_dates <- function(df, begin_date, end_date) {
+    begin_date <- as.Date(begin_date)
+    end_date <- as.Date(begin_date)
+    df$event_received <- as.Date(df$event_received)
+    df <- df[df$event_received >= begin_date & df$event_received <= end_date, ]
+    return(df)
+}
+
+# Returns a data frame containing activity history for a specific song and
+# artist.
+filter_song <- function(df, song_title, artist_name) {
+    df <- df[df$song_title == song_title & df$artist_name == artist_name, ]
+    return(df)
+}
+
+# Returns a data frame with unique song titles and artist names.
+unique_songs <- function(df) {
+    df <- df %>% select("artist_name", "song_title")
+    df <- df %>% distinct()
+    return(df)
+}
