@@ -82,9 +82,12 @@ filter_date <- function(df, date) {
 
 # Returns a data frame containing activity history between two specific dates.
 filter_dates <- function(df, begin_date, end_date) {
+    # Convert variables to comparable Date format
     begin_date <- as.Date(begin_date)
-    end_date <- as.Date(begin_date)
+    end_date <- as.Date(end_date)
     df$event_received <- as.Date(df$event_received)
+
+    # Filter data frame between begin_date and end_date
     df <- df[df$event_received >= begin_date & df$event_received <= end_date, ]
     return(df)
 }
