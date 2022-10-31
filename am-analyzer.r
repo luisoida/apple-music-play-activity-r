@@ -1,9 +1,18 @@
 # ampa.r - Apple Music Play Activity for R
 # Version 0.1
+#
+# Luis Oida <luisoida@icloud.com>
+#
+# This project is not meant to be utilized in a production environment, and is
+# used in my time learning the R language.
+# -----------------------------------------------------------------------------
 
 library("dplyr")
 library("readr")
 library("stringr")
+
+
+# Data management -------------------------------------------------------------
 
 # Renames columns of play activity data frames.
 rename_ampa_columns <- function(df) {
@@ -53,6 +62,8 @@ open_ampa_csv <- function(filename) {
     return(rename_ampa_columns(read_csv(filename)))
 }
 
+# Statistical information -----------------------------------------------------
+
 # Returns a data frame containing the total play length of unique songs.
 song_lengths <- function(df) {
     # Select PLAY_END event types. (Is this correct?)
@@ -65,6 +76,29 @@ song_lengths <- function(df) {
 
     return(df)
 }
+
+# Returns a data frame with unique song titles and artist names.
+unique_songs <- function(df) {
+    # Select artist name and song title, and select each distinct row.
+    df <- df %>% select("artist_name", "song_title")
+    df <- df %>% distinct()
+    return(df)
+}
+
+# Returns a data frame containing the various devices and versions that have
+# been used to stream on Apple Music.
+get_devices <- function(df) {
+    # Fetch build version column and select each distinct row.
+    df <- df %>% select("Build version")
+    df <- df %>% distinct()
+
+    # TODO: Split columns into app version, system version, build number, and
+    # device version. (What is hwp?)
+
+    return(df)
+}
+
+# Filters ---------------------------------------------------------------------
 
 # Returns a data frame containing activity history for a specific artist.
 filter_artist <- function(df, artist_name) {
@@ -99,9 +133,11 @@ filter_song <- function(df, song_title, artist_name) {
     return(df)
 }
 
-# Returns a data frame with unique song titles and artist names.
-unique_songs <- function(df) {
-    df <- df %>% select("artist_name", "song_title")
-    df <- df %>% distinct()
+# Returns a data frame containing activity history with a specific
+# playback format.
+filter_format <- function(df, format) {
+    # TODO: This function is not working as directed.
+    print("This function (filter_format()) is not working as expected.")
+    df <- df[df$users_playback_format == format, ]
     return(df)
 }
