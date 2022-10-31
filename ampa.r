@@ -3,6 +3,7 @@
 
 library("dplyr")
 library("readr")
+library("stringr")
 
 # Renames columns of play activity data frames.
 rename_ampa_columns <- function(df) {
@@ -55,17 +56,12 @@ open_ampa_csv <- function(filename) {
 # Returns a data frame containing the total play length of unique songs.
 song_lengths <- function(df) {
     # Select PLAY_END event types. (Is this correct?)
-    df <- df[df$event_type = "PLAY_END", ]
-
-    # Merge song title and artist name to allow for calculation.
-    df$song_sort <- str_c(df$song_title, "<!-AMPA-SEP-!>", df$artist_name)
+    df <- df[df$event_type == "PLAY_END", ]
 
     # Create table
-    df <- aggregate(df$play_duration, list(df$song_sort), FUN = sum)
-    df[c("song_title", "artist_name")] <- str_split_fixed(df$Group.1,
-        "<!-AMPA-SEP-!>", 2)
-    df <- rename(df, "total_play_duration" = x)
-    df <- select(df, -Group.1)
+    df <- aggregate(play_duration ~ song_title + artist_name, data = df,
+        FUN = sum, na.rm = TRUE)
+    df <- df %>% arrange(desc(play_duration))
 
     return(df)
 }
